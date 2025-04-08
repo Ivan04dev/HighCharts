@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/drilldown.js"></script>
+</head>
+
+<body>
+    <div id="container" style="height: 600px;"></div>
+
+    <script>
+        Highcharts.chart('container', {
+            chart: {
+                type: 'column',
+                events: {
+                    drilldown: function (e) {
+                        if (!e.seriesOptions) {
+                            const chart = this;
+                            let seriesData;
+
+                            // Nivel 2: Jefes Regionales
+                            if (e.point.drilldown === 'gerente') {
+                                seriesData = {
+                                    name: 'Jefes Regionales',
+                                    id: 'gerente',
+                                    data: [
+                                        { name: 'Jefe Regional Norte', y: 2, drilldown: 'regional_norte' },
+                                        { name: 'Jefe Regional Sur', y: 2, drilldown: 'regional_sur' }
+                                    ]
+                                };
+                            }
+
+                            // Nivel 3: Jefes de Sucursal
+                            else if (e.point.drilldown === 'regional_norte') {
+                                seriesData = {
+                                    name: 'Jefes Sucursal Norte',
+                                    id: 'regional_norte',
+                                    data: [
+                                        { name: 'Sucursal A', y: 1, drilldown: 'sucursal_a' },
+                                        { name: 'Sucursal B', y: 1, drilldown: 'sucursal_b' }
+                                    ]
+                                };
+                            } else if (e.point.drilldown === 'regional_sur') {
+                                seriesData = {
+                                    name: 'Jefes Sucursal Sur',
+                                    id: 'regional_sur',
+                                    data: [
+                                        { name: 'Sucursal C', y: 1, drilldown: 'sucursal_c' },
+                                        { name: 'Sucursal D', y: 1, drilldown: 'sucursal_d' }
+                                    ]
+                                };
+                            }
+
+                            // Nivel 4: Ejecutivos
+                            else if (e.point.drilldown === 'sucursal_a') {
+                                seriesData = {
+                                    name: 'Ejecutivos Sucursal A',
+                                    id: 'sucursal_a',
+                                    data: [['Ejecutivo 1', 0.5], ['Ejecutivo 2', 0.5]]
+                                };
+                            } else if (e.point.drilldown === 'sucursal_b') {
+                                seriesData = {
+                                    name: 'Ejecutivos Sucursal B',
+                                    id: 'sucursal_b',
+                                    data: [['Ejecutivo 3', 0.5], ['Ejecutivo 4', 0.5]]
+                                };
+                            } else if (e.point.drilldown === 'sucursal_c') {
+                                seriesData = {
+                                    name: 'Ejecutivos Sucursal C',
+                                    id: 'sucursal_c',
+                                    data: [['Ejecutivo 5', 0.5], ['Ejecutivo 6', 0.5]]
+                                };
+                            } else if (e.point.drilldown === 'sucursal_d') {
+                                seriesData = {
+                                    name: 'Ejecutivos Sucursal D',
+                                    id: 'sucursal_d',
+                                    data: [['Ejecutivo 7', 0.5], ['Ejecutivo 8', 0.5]]
+                                };
+                            }
+
+                            // Cargar nuevo nivel
+                            if (seriesData) {
+                                setTimeout(function () {
+                                    chart.addSeriesAsDrilldown(e.point, seriesData);
+                                }, 500);
+                            }
+                        }
+                    }
+                }
+            },
+            title: {
+                text: 'Jerarquía de Puestos'
+            },
+            xAxis: {
+                type: 'category'
+            },
+            legend: {
+                enabled: false
+            },
+            plotOptions: {
+                series: {
+                    dataLabels: {
+                        enabled: true,
+                        format: '{point.name}'
+                    }
+                }
+            },
+            series: [{
+                name: 'Gerencia',
+                colorByPoint: true,
+                data: [{
+                    name: 'Gerente General',
+                    y: 4,
+                    drilldown: 'gerente'
+                }]
+            }],
+            drilldown: {
+                breadcrumbs: {
+                    position: {
+                        align: 'right'
+                    }
+                },
+                series: []
+            }
+        });
+    </script>
+</body>
+
+</html>

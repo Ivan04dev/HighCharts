@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/drilldown.js"></script>
+</head>
+
+<body>
+    <div id="container" style="height: 500px;"></div>
+
+    <script>
+        Highcharts.chart('container', {
+            chart: {
+                type: 'column'
+            },
+            title: {
+                text: 'Población por Comunidad y Ciudad'
+            },
+            xAxis: {
+                type: 'category'
+            },
+            legend: {
+                enabled: false
+            },
+            plotOptions: {
+                series: {
+                    borderWidth: 0,
+                    dataLabels: {
+                        enabled: true,
+                        format: '{point.y:.1f}M'
+                    }
+                }
+            },
+            series: [{
+                name: 'Comunidades Autónomas',
+                colorByPoint: true,
+                data: [{
+                    name: 'Andalucía',
+                    y: 8.5,
+                    drilldown: 'andalucia'
+                }, {
+                    name: 'Cataluña',
+                    y: 7.7,
+                    drilldown: 'cataluna'
+                }]
+            }],
+            drilldown: {
+                series: [
+                    {
+                        id: 'andalucia',
+                        name: 'Ciudades de Andalucía',
+                        data: [
+                            ['Sevilla', 0.7],
+                            ['Málaga', 0.57],
+                            ['Granada', 0.23]
+                        ]
+                    },
+                    {
+                        id: 'cataluna',
+                        name: 'Ciudades de Cataluña',
+                        data: [
+                            ['Barcelona', 1.6],
+                            ['Tarragona', 0.13],
+                            ['Girona', 0.1]
+                        ]
+                    }
+                ]
+            }
+        });
+    </script>
+</body>
+
+</html>

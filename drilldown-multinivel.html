@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/drilldown.js"></script>
+</head>
+
+<body>
+    <div id="container" style="height: 600px;"></div>
+
+    <script>
+        Highcharts.chart('container', {
+            chart: {
+                type: 'column',
+                events: {
+                    drilldown: function (e) {
+                        if (!e.seriesOptions) {
+                            const chart = this;
+                            let seriesData;
+
+                            // Segundo nivel: ciudades
+                            if (e.point.drilldown === 'andalucia') {
+                                seriesData = {
+                                    name: 'Ciudades de Andalucía',
+                                    id: 'andalucia',
+                                    data: [
+                                        { name: 'Sevilla', y: 0.7, drilldown: 'sevilla' },
+                                        { name: 'Granada', y: 0.23, drilldown: 'granada' }
+                                    ]
+                                };
+                            }
+
+                            // Tercer nivel: barrios
+                            else if (e.point.drilldown === 'sevilla') {
+                                seriesData = {
+                                    name: 'Barrios de Sevilla',
+                                    id: 'sevilla',
+                                    data: [
+                                        ['Triana', 0.12],
+                                        ['Nervión', 0.15],
+                                        ['Macarena', 0.18]
+                                    ]
+                                };
+                            } else if (e.point.drilldown === 'granada') {
+                                seriesData = {
+                                    name: 'Barrios de Granada',
+                                    id: 'granada',
+                                    data: [
+                                        ['Albaicín', 0.07],
+                                        ['Zaidín', 0.09],
+                                        ['Realejo', 0.07]
+                                    ]
+                                };
+                            }
+
+                            // Carga el nuevo nivel
+                            if (seriesData) {
+                                setTimeout(function () {
+                                    chart.addSeriesAsDrilldown(e.point, seriesData);
+                                }, 500);
+                            }
+                        }
+                    },
+                    drillup: function () {
+                        console.log('Nivel anterior');
+                    }
+                }
+            },
+            title: {
+                text: 'Ejemplo Drilldown 4 niveles'
+            },
+            xAxis: {
+                type: 'category'
+            },
+            legend: {
+                enabled: false
+            },
+            plotOptions: {
+                series: {
+                    dataLabels: {
+                        enabled: true,
+                        format: '{point.name}: {point.y:.2f}M'
+                    }
+                }
+            },
+            series: [{
+                name: 'Comunidades Autónomas',
+                colorByPoint: true,
+                data: [
+                    {
+                        name: 'Andalucía',
+                        y: 8.5,
+                        drilldown: 'andalucia'
+                    }
+                ]
+            }],
+            drilldown: {
+                breadcrumbs: {
+                    position: {
+                        align: 'right'
+                    }
+                },
+                series: []
+            }
+        });
+    </script>
+</body>
+
+</html>

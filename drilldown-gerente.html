@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/drilldown.js"></script>
+</head>
+
+<body>
+    <div id="container" style="height: 600px;"></div>
+
+    <script>
+        // Datos originales
+        const data = [
+            { region: 'Metropolitana', hub: 'Aragon', sucursal: 'Cuitlahuac', enfuncionamiento: 'si', usuariored: 'lmrico' },
+            { region: 'Metropolitana', hub: 'Aragon', sucursal: 'Cuitlahuac', enfuncionamiento: 'si', usuariored: 'lmrico' },
+            { region: 'Metropolitana', hub: 'Aragon II', sucursal: 'Tepeyac', enfuncionamiento: 'si', usuariored: 'eeliasd' },
+            { region: 'Metropolitana', hub: 'Centro II', sucursal: 'Tlatelolco', enfuncionamiento: 'si', usuariored: 'lacevesp' },
+            { region: 'Metropolitana', hub: 'Satelite', sucursal: 'Atizapan', enfuncionamiento: 'si', usuariored: 'viortiz' },
+            { region: 'Metropolitana', hub: 'Tulancingo', sucursal: 'Patio Tulancingo', enfuncionamiento: 'si', usuariored: 'ecalleros' },
+            { region: 'Metropolitana', hub: 'Tulancingo', sucursal: 'Patio Tulancingo', enfuncionamiento: 'si', usuariored: 'ecalleros' }
+        ];
+
+        // Normalizar nombres de hub ("XX II" → "XX")
+        const normalizarHub = hub => hub.replace(/\s+II$/, '');
+
+        // Agrupar datos jerárquicamente y acumular usuarios
+        const estructura = {};
+
+        // cambiar data por hubsPorGerenteATC
+        data.forEach(item => {
+            const region = item.region;
+            const hub = normalizarHub(item.hub);
+            const sucursal = item.sucursal;
+            const usuario = item.usuariored;
+
+            if (!estructura[region]) estructura[region] = {};
+            if (!estructura[region][hub]) estructura[region][hub] = {};
+            if (!estructura[region][hub][sucursal]) estructura[region][hub][sucursal] = {};
+            if (!estructura[region][hub][sucursal][usuario]) estructura[region][hub][sucursal][usuario] = 0;
+
+            estructura[region][hub][sucursal][usuario] += 1; // acumulación
+        });
+
+        // Construir las series para el gráfico
+        const series = [];
+        const drilldownSeries = [];
+
+        Object.keys(estructura).forEach(region => {
+            // Acumulación real de usuarios por región
+            let totalRegionUsuarios = 0;
+            Object.values(estructura[region]).forEach(hub => {
+                Object.values(hub).forEach(sucursal => {
+                    Object.values(sucursal).forEach(count => {
+                        totalRegionUsuarios += count;
+                    });
+                });
+            });
+
+            series.push({
+                name: region,
+                y: totalRegionUsuarios,
+                drilldown: region
+            });
+
+            const hubs = estructura[region];
+            const hubData = [];
+
+            Object.keys(hubs).forEach(hub => {
+                let totalHubUsuarios = 0;
+                Object.values(hubs[hub]).forEach(sucursal => {
+                    Object.values(sucursal).forEach(count => {
+                        totalHubUsuarios += count;
+                    });
+                });
+
+                hubData.push({
+                    name: hub,
+                    y: totalHubUsuarios,
+                    drilldown: `${region}-${hub}`
+                });
+
+                const sucursales = hubs[hub];
+                const sucursalData = [];
+
+                Object.keys(sucursales).forEach(sucursal => {
+                    const usuarios = sucursales[sucursal];
+                    const usuarioData = [];
+
+                    Object.keys(usuarios).forEach(usuario => {
+                        usuarioData.push([usuario, usuarios[usuario]]);
+                    });
+
+                    const totalSucursal = usuarioData.reduce((sum, [, y]) => sum + y, 0);
+
+                    sucursalData.push({
+                        name: sucursal,
+                        y: totalSucursal,
+                        drilldown: `${region}-${hub}-${sucursal}`
+                    });
+
+                    drilldownSeries.push({
+                        name: `Usuarios en ${sucursal}`,
+                        id: `${region}-${hub}-${sucursal}`,
+                        data: usuarioData
+                    });
+                });
+
+                drilldownSeries.push({
+                    name: `Sucursales en ${hub}`,
+                    id: `${region}-${hub}`,
+                    data: sucursalData
+                });
+            });
+
+            drilldownSeries.push({
+                name: `Hubs en ${region}`,
+                id: region,
+                data: hubData
+            });
+        });
+
+        // Crear gráfico
+        Highcharts.chart('container', {
+            credits: {
+                enabled: false
+            },
+            chart: {
+                type: 'column'
+            },
+            title: {
+                text: 'Jerarquía Acumulada: Región > Hub > Sucursal > Usuario'
+            },
+            xAxis: {
+                type: 'category'
+            },
+            yAxis: {
+                allowDecimals: false,
+                title: {
+                    text: 'Cantidad'
+                }
+            },
+            legend: {
+                enabled: false
+            },
+            plotOptions: {
+                series: {
+                    dataLabels: {
+                        enabled: true,
+                        format: '{point.name}'
+                    }
+                }
+            },
+            series: [{
+                name: 'Regiones',
+                colorByPoint: true,
+                data: series
+            }],
+            drilldown: {
+                breadcrumbs: {
+                    position: {
+                        align: 'right'
+                    }
+                },
+                series: drilldownSeries
+            }
+        });
+    </script>
+</body>
+
+</html>
